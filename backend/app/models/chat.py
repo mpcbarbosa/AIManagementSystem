@@ -1,6 +1,8 @@
 from datetime import datetime
 from sqlalchemy import String, UUID, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 
 from .base import Base
 
