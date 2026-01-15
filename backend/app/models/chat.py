@@ -2,6 +2,9 @@ from datetime import datetime
 from sqlalchemy import String, UUID, ForeignKey
 from sqlalchemy.orm import relationship, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import DateTime
+
+
 
 import uuid
 
