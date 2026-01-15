@@ -1,4 +1,4 @@
-from sqlalchemy import String, UUID, ForeignKey, UniqueConstraint
+from sqlalchemy import String, UUID, ForeignKey, UniqueConstraint, Computed
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid
 
@@ -11,7 +11,9 @@ class Address(Base):
 
     customer_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("customers.id"), nullable=False)
     alias: Mapped[str] = mapped_column(String(255), nullable=False)
-    alias_normalized: Mapped[str] = mapped_column(String(255), computed("lower(trim(alias))"), stored=True)
+    alias_normalized: Mapped[str] = mapped_column(String(255), Computed("lower(trim(alias))", persisted=True),
+    nullable=False,
+)
     street: Mapped[str] = mapped_column(String(255), nullable=False)
     city: Mapped[str] = mapped_column(String(255), nullable=False)
 
