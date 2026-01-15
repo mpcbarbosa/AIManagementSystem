@@ -1,4 +1,6 @@
 import sys
+import os
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -49,18 +51,19 @@ def run_migrations_offline():
         context.run_migrations()
 
 
-def run_migrations_online():
-    """Run migrations in 'online' mode.
+def run_migrations_online() -> None:
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        raise RuntimeError("DATABASE_URL environment variable is not set")
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
+    # Render normalmente fornece postgres://; SQLAlchemy prefere postgresql://
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
 
-    """
-    from app.config import settings
-    config.set_main_option("sqlalchemy.url", settings.database_url)
+    config.set_main_option("sqlalchemy.url", db_url)
 
     connectable = engine_from_config(
-        config.get_section(config.config_file_name),
+        config.get_section(config.config_ini_section) or {},
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
