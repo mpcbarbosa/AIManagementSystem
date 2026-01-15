@@ -1,5 +1,6 @@
 from sqlalchemy import String, UUID, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+import uuid
 
 from sqlalchemy.orm import relationship
 

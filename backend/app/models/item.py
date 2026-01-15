@@ -1,6 +1,6 @@
 from sqlalchemy import String, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
+import uuid
 
 from .base import Base
 
