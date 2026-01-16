@@ -40,5 +40,43 @@ O sistema é desenvolvido para:
 
 ---
 
+## Local setup
+
+1. Create a virtual environment:
+   ```
+   python -m venv venv
+   venv\Scripts\activate  # On Windows
+   ```
+
+2. Install requirements:
+   ```
+   pip install -r backend/requirements.txt
+   ```
+
+3. Create `.env` file based on `.env.example`:
+   ```
+   copy .env.example .env
+   # Edit .env with your database credentials
+   ```
+
+4. Run database migrations:
+   ```
+   cd backend
+   alembic upgrade head
+   cd ..
+   ```
+
+5. Run the development server:
+   ```
+   .\scripts\dev.ps1
+   ```
+
+6. Run tests:
+   ```
+   .\scripts\test.ps1
+   ```
+
+---
+
 ## Estrutura do repositório
 
