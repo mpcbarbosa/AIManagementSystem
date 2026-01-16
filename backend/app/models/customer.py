@@ -1,14 +1,25 @@
-from sqlalchemy import String
-from sqlalchemy.orm import relationship
+﻿from __future__ import annotations
+
 from typing import List
+
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-import uuid
 
 from .base import Base
+
 
 class Customer(Base):
     __tablename__ = "customers"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    addresses: Mapped[List["Address"]] = relationship(back_populates="customer")
+    addresses: Mapped[List["Address"]] = relationship(
+        back_populates="customer",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    contacts: Mapped[List["Contact"]] = relationship(
+        back_populates="customer",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
