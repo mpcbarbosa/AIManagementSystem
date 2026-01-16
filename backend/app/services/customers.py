@@ -12,6 +12,7 @@ from app.schemas.customers import (
     CustomerResponse,
     CustomerListResponse,
     AddressResponse,
+    ContactResponse,
 )
 
 
