@@ -12,7 +12,9 @@ class AddressCreate(BaseModel):
 
 class AddressResponse(BaseModel):
     id: UUID
+    customer_id: UUID
     alias: str
+    alias_normalized: str
     street: str
     city: str
     created_at: datetime
@@ -27,6 +29,7 @@ class ContactCreate(BaseModel):
 
 class ContactResponse(BaseModel):
     id: UUID
+    customer_id: UUID
     phone: str
     name: str
     accepts_suggestions: Optional[bool]

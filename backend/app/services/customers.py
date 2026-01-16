@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
@@ -14,6 +15,8 @@ from app.schemas.customers import (
     AddressResponse,
     ContactResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def create_customer(db: Session, customer_data: CustomerCreate) -> CustomerResponse:
@@ -44,12 +47,16 @@ def create_customer(db: Session, customer_data: CustomerCreate) -> CustomerRespo
         contact = Contact(customer_id=customer.id, phone=cont.phone, name=cont.name, accepts_suggestions=cont.accepts_suggestions)
         db.add(contact)
         contacts.append(contact)
-
+    
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="Conflict occurred")
+    except Exception as e:
+        db.rollback()
+        logger.error("Unexpected error creating customer", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     # Refresh
     db.refresh(customer)
@@ -65,7 +72,9 @@ def create_customer(db: Session, customer_data: CustomerCreate) -> CustomerRespo
         addresses=[
             AddressResponse(
                 id=a.id,
+                customer_id=a.customer_id,
                 alias=a.alias,
+                alias_normalized=a.alias_normalized,
                 street=a.street,
                 city=a.city,
                 created_at=a.created_at,
@@ -75,6 +84,7 @@ def create_customer(db: Session, customer_data: CustomerCreate) -> CustomerRespo
         contacts=[
             ContactResponse(
                 id=c.id,
+                customer_id=c.customer_id,
                 phone=c.phone,
                 name=c.name,
                 accepts_suggestions=c.accepts_suggestions,
@@ -88,7 +98,11 @@ def create_customer(db: Session, customer_data: CustomerCreate) -> CustomerRespo
 
 
 def get_customer(db: Session, customer_id: UUID) -> CustomerResponse:
-    customer = db.query(Customer).options(joinedload(Customer.addresses), joinedload(Customer.contacts)).filter(Customer.id == customer_id).first()
+    try:
+        customer = db.query(Customer).options(joinedload(Customer.addresses), joinedload(Customer.contacts)).filter(Customer.id == customer_id).first()
+    except Exception as e:
+        logger.error("Error fetching customer", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return CustomerResponse(
@@ -97,7 +111,9 @@ def get_customer(db: Session, customer_id: UUID) -> CustomerResponse:
         addresses=[
             AddressResponse(
                 id=a.id,
+                customer_id=a.customer_id,
                 alias=a.alias,
+                alias_normalized=a.alias_normalized,
                 street=a.street,
                 city=a.city,
                 created_at=a.created_at,
@@ -107,6 +123,7 @@ def get_customer(db: Session, customer_id: UUID) -> CustomerResponse:
         contacts=[
             ContactResponse(
                 id=c.id,
+                customer_id=c.customer_id,
                 phone=c.phone,
                 name=c.name,
                 accepts_suggestions=c.accepts_suggestions,
@@ -120,8 +137,12 @@ def get_customer(db: Session, customer_id: UUID) -> CustomerResponse:
 
 
 def get_customers(db: Session, limit: int = 10, offset: int = 0) -> CustomerListResponse:
-    customers = db.query(Customer).options(joinedload(Customer.addresses), joinedload(Customer.contacts)).limit(limit).offset(offset).all()
-    total = db.query(Customer).count()
+    try:
+        customers = db.query(Customer).options(joinedload(Customer.addresses), joinedload(Customer.contacts)).limit(limit).offset(offset).all()
+        total = db.query(Customer).count()
+    except Exception as e:
+        logger.error("Error fetching customers", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
     return CustomerListResponse(
         customers=[
             CustomerResponse(
@@ -130,7 +151,9 @@ def get_customers(db: Session, limit: int = 10, offset: int = 0) -> CustomerList
                 addresses=[
                     AddressResponse(
                         id=a.id,
+                        customer_id=a.customer_id,
                         alias=a.alias,
+                        alias_normalized=a.alias_normalized,
                         street=a.street,
                         city=a.city,
                         created_at=a.created_at,
@@ -140,6 +163,7 @@ def get_customers(db: Session, limit: int = 10, offset: int = 0) -> CustomerList
                 contacts=[
                     ContactResponse(
                         id=ct.id,
+                        customer_id=ct.customer_id,
                         phone=ct.phone,
                         name=ct.name,
                         accepts_suggestions=ct.accepts_suggestions,
@@ -179,14 +203,18 @@ def update_customer(db: Session, customer_id: UUID, customer_data: CustomerCreat
         address = Address(customer_id=customer_id, alias=addr.alias, street=addr.street, city=addr.city)
         db.add(address)
         addresses.append(address)
-
+    
     # Ignore contacts for update
-
+    
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="Conflict occurred")
+    except Exception as e:
+        db.rollback()
+        logger.error("Unexpected error updating customer", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     # Reload customer with addresses and contacts
     customer = db.query(Customer).options(joinedload(Customer.addresses), joinedload(Customer.contacts)).filter(Customer.id == customer_id).first()
@@ -197,7 +225,9 @@ def update_customer(db: Session, customer_id: UUID, customer_data: CustomerCreat
         addresses=[
             AddressResponse(
                 id=a.id,
+                customer_id=a.customer_id,
                 alias=a.alias,
+                alias_normalized=a.alias_normalized,
                 street=a.street,
                 city=a.city,
                 created_at=a.created_at,
@@ -207,6 +237,7 @@ def update_customer(db: Session, customer_id: UUID, customer_data: CustomerCreat
         contacts=[
             ContactResponse(
                 id=c.id,
+                customer_id=c.customer_id,
                 phone=c.phone,
                 name=c.name,
                 accepts_suggestions=c.accepts_suggestions,
@@ -224,14 +255,22 @@ def delete_customer(db: Session, customer_id: UUID):
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
 
+    # Delete contacts
+    db.query(Contact).filter(Contact.customer_id == customer_id).delete()
+
     # Delete addresses
     db.query(Address).filter(Address.customer_id == customer_id).delete()
 
     # Delete customer
     db.delete(customer)
-
+    
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
+        logger.error("Integrity error deleting customer", exc_info=True)
         raise HTTPException(status_code=500, detail="Error deleting customer")
+    except Exception as e:
+        db.rollback()
+        logger.error("Unexpected error deleting customer", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
