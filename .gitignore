@@ -7,3 +7,11 @@ env/
 venv/
 .venv/
 .env
+
+backend/test.db
+*.db
+
+
+backend/test.db
+*.db
+
