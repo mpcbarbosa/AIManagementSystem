@@ -15,3 +15,8 @@ backend/test.db
 backend/test.db
 *.db
 
+
+*.db
+backend/test.db
+test.db
+
