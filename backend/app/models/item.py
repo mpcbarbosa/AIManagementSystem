@@ -7,6 +7,6 @@ from .base import Base
 class Item(Base):
     __tablename__ = "items"
 
+    code: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(String(500), nullable=True)
     price: Mapped[float] = mapped_column(Float, nullable=False)

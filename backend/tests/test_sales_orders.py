@@ -25,8 +25,8 @@ def test_create_sales_order(client, db):
     db.flush()
     address_id = str(address.id)
 
-    item1 = Item(name="Test Item 1", price=10.0)
-    item2 = Item(name="Test Item 2", price=20.0)
+    item1 = Item(code="TEST004", name="Test Item 1", price=10.0)
+    item2 = Item(code="TEST005", name="Test Item 2", price=20.0)
     db.add(item1)
     db.add(item2)
     db.flush()
@@ -71,7 +71,7 @@ def test_get_sales_order(client, db):
     db.flush()
     address_id = str(address.id)
 
-    item = Item(name="Test Item", price=15.0)
+    item = Item(code="TEST003", name="Test Item", price=15.0)
     db.add(item)
     db.flush()
     item_id = str(item.id)
@@ -111,8 +111,8 @@ def test_update_sales_order(client, db):
     db.flush()
     address_id = str(address.id)
 
-    item1 = Item(name="Test Item 1", price=10.0)
-    item2 = Item(name="Test Item 2", price=20.0)
+    item1 = Item(code="TEST001", name="Test Item 1", price=10.0)
+    item2 = Item(code="TEST002", name="Test Item 2", price=20.0)
     db.add(item1)
     db.add(item2)
     db.flush()
@@ -163,7 +163,7 @@ def test_delete_sales_order(client, db):
     db.flush()
     address_id = str(address.id)
 
-    item = Item(name="Test Item", price=10.0)
+    item = Item(code="TEST006", name="Test Item", price=10.0)
     db.add(item)
     db.flush()
     item_id = str(item.id)

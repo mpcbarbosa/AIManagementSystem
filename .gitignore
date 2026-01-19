@@ -8,15 +8,7 @@ venv/
 .venv/
 .env
 
-backend/test.db
-*.db
-
-
-backend/test.db
-*.db
-
-
+# databases
 *.db
 backend/test.db
 test.db
-
